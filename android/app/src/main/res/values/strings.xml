@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NextHealthApp</string>
+    <string name="title_activity_main">NextHealthApp</string>
+    <string name="package_name">com.nexthealth.app</string>
+    <string name="custom_url_scheme">com.nexthealth.app</string>
+</resources>
