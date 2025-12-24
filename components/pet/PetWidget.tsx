@@ -66,9 +66,9 @@ export function PetWidget() {
 
     return (
         <>
-            <div className="bg-gradient-to-br from-sage-100 to-sage-50 dark:from-sage-900 dark:to-sage-950 rounded-3xl p-6 mb-6 shadow-sm border border-sage-200/50 relative overflow-hidden group">
-                <div className="relative z-10 flex items-center justify-between">
-                    <div>
+            <div className="bg-gradient-to-br from-sage-100 to-sage-50 dark:from-sage-900 dark:to-sage-950 rounded-3xl p-4 sm:p-6 mb-6 shadow-sm border border-sage-200/50 relative overflow-hidden group">
+                <div className="relative z-10 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 sm:gap-0">
+                    <div className="text-center sm:text-left w-full sm:w-auto flex flex-col items-center sm:items-start">
                         <div className="inline-flex items-center px-3 py-1 bg-white/50 backdrop-blur-md rounded-full text-xs font-semibold text-sage-700 dark:text-sage-300 mb-2 border border-white/20">
                             Lv. {pet.level} {pet.type.toUpperCase()}
                         </div>
@@ -90,7 +90,7 @@ export function PetWidget() {
 
                     {/* Interactive Pet Area */}
                     <div
-                        className="relative h-28 w-28 cursor-pointer"
+                        className="relative h-24 w-24 sm:h-28 sm:w-28 cursor-pointer shrink-0"
                         onClick={triggerFlyover}
                     >
                         <motion.div

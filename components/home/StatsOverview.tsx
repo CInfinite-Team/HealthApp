@@ -14,7 +14,7 @@ export function StatsOverview({ completedToday, totalToday, streak }: StatsOverv
     const progress = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
 
     return (
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             {/* Today Progress */}
             <motion.div
                 whileHover={{ scale: 1.02 }}
