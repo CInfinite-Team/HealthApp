@@ -18,7 +18,12 @@ jobs:
       - run: npm run build
       
       # 2. Sync Capacitor
+      # 2. Sync & Install Pods
       - run: npx cap sync ios
+      - name: Install Pods
+        run: |
+          cd ios/App
+          pod install
 
       # 3. Build Unsigned .app (For Generic Device)
       - name: Build Unsigned App
