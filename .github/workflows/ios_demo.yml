@@ -1,0 +1,49 @@
+name: Build iOS IPA (For Sideloadly)
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 1. Setup Node & Dependencies
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npm run build
+      
+      # 2. Sync Capacitor
+      - run: npx cap sync ios
+
+      # 3. Build Unsigned .app (For Generic Device)
+      - name: Build Unsigned App
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      # 4. Package into .ipa (Payload method)
+      - name: Create IPA
+        run: |
+          cd ios/App/build/Build/Products/Release-iphoneos
+          mkdir Payload
+          cp -r App.app Payload/
+          zip -r ../../../../../../HealthApp_Unsigned.ipa Payload
+
+      # 5. Upload Artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: health-app-ipa
+          path: HealthApp_Unsigned.ipa
+          retention-days: 5
