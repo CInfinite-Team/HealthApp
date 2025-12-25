@@ -18,12 +18,12 @@ jobs:
       - run: npm run build
       
       # 2. Sync Capacitor
-      # 2. Sync & Install Pods
-      - run: npx cap sync ios
-      - name: Install Pods
+      # 2. Fresh iOS Generation (Fixes corrupt/missing files)
+      - name: Generate iOS Platform
         run: |
-          cd ios/App
-          pod install
+          rm -rf ios
+          npx cap add ios
+          npx cap sync ios
 
       # 3. Build Unsigned .app (For Generic Device)
       - name: Build Unsigned App
