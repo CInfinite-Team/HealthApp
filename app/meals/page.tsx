@@ -57,7 +57,7 @@ export default function MealsPage() {
     ];
 
     return (
-        <div className="space-y-6 pb-24 animate-in fade-in duration-500 min-h-screen pt-4">
+        <div className="space-y-6 pb-32 animate-in fade-in duration-500 min-h-screen pt-4">
             <header className="mb-2 px-4">
                 <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">

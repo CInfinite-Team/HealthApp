@@ -120,27 +120,29 @@ export default function Home() {
       <PetWidget />
 
       {/* Header & Calendar */}
-      <div className="bg-gradient-to-br from-white to-sage-50 dark:from-zinc-900 dark:to-zinc-950 pt-6 pb-4 px-4 rounded-[32px] shadow-sm mb-6 border border-transparent dark:border-white/5">
-        <header className="flex justify-between items-center mb-6 pl-2">
-          <div>
-            <h1 className="text-xl font-bold font-serif text-sage-900 dark:text-sage-100">{greeting}</h1>
-            <p className="text-xs text-sage-500 dark:text-sage-400">Let's have a gentle day.</p>
+      <div className="bg-gradient-to-br from-white to-sage-50 dark:from-zinc-900 dark:to-zinc-950 pt-6 pb-6 px-5 rounded-[32px] shadow-sm mb-6 border border-transparent dark:border-white/5 mx-2">
+        <header className="flex justify-between items-start mb-6 pl-1 pr-1">
+          <div className="pt-1">
+            <h1 className="text-2xl font-bold font-serif text-sage-900 dark:text-sage-100">{greeting}</h1>
+            <p className="text-sm text-sage-500 dark:text-sage-400 mt-1">Let's have a gentle day.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="px-3 py-1 text-xs font-mono text-sage-500 bg-white/50 dark:bg-black/20 rounded-full border border-sage-100 dark:border-white/5 backdrop-blur-sm whitespace-nowrap">
+          <div className="flex flex-col items-end gap-3">
+            <div className="px-3 py-1.5 text-xs font-mono text-sage-600 bg-white/60 dark:bg-black/40 rounded-full border border-sage-100 dark:border-white/10 backdrop-blur-sm whitespace-nowrap shadow-sm">
               {/* Dynamic Month/Time */}
-              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}  • {currentTime.toLocaleString('default', { month: 'short' })}
+              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
-            <Link href="/reports">
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-full">
-                <FileText className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/social">
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-full">
-                <Users className="h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/reports">
+                <Button variant="ghost" size="icon" className="h-10 w-10 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-full border border-transparent hover:border-sage-200">
+                  <FileText className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/social">
+                <Button variant="ghost" size="icon" className="h-10 w-10 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-full border border-transparent hover:border-sage-200">
+                  <Users className="h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </header>
 

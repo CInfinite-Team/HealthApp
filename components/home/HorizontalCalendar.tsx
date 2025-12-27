@@ -41,8 +41,40 @@ export function HorizontalCalendar({ selectedDate, onSelectDate, tasks = [], cla
         return { hasPending, allCompleted };
     };
 
+    // Auto-scroll to selected date
+    const selectedRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (selectedRef.current) {
+            selectedRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    }, [selectedDate, isExpanded]);
+
+    // Update weekStart if selectedDate is out of view?
+    // Actually, distinct from "week view" which usually shows a specific window.
+    // If we want a scrolling strip, maybe we should render -7 to +7 days or similar?
+    // Current implementation renders 14 days starting from `weekStart`.
+    // Let's ensure `weekStart` updates to contain `selectedDate`.
+
+    useEffect(() => {
+        // If selected date is far from current weekStart, adjust weekStart
+        // Simple logic: make weekStart = startOfWeek(selectedDate) - 3 days?
+        // Or just ensure selectedDate is in the range.
+        const diff = selectedDate.getTime() - weekStart.getTime();
+        const daysDiff = diff / (1000 * 3600 * 24);
+
+        if (daysDiff < 0 || daysDiff > 13) {
+            setWeekStart(addDays(startOfWeek(selectedDate, { weekStartsOn: 1 }), -3)); // Start a bit before
+        }
+    }, [selectedDate]);
+
     // --- Week View Logic ---
-    const weekDays = Array.from({ length: 14 }).map((_, i) => addDays(weekStart, i));
+    // Render 21 days for smoother scrolling feeling
+    const weekDays = Array.from({ length: 21 }).map((_, i) => addDays(weekStart, i));
 
     // --- Month View Logic ---
     const daysInMonth = eachDayOfInterval({
@@ -50,7 +82,6 @@ export function HorizontalCalendar({ selectedDate, onSelectDate, tasks = [], cla
         end: endOfMonth(currentMonth),
     });
     const startDayIndex = getDay(startOfMonth(currentMonth)); // 0 = Sun, 1 = Mon...
-    // Adjust for Monday start if desired, but standard calendar often starts Sun. Let's stick to standard.
 
     const toggleExpand = () => setIsExpanded(!isExpanded);
 
@@ -83,20 +114,21 @@ export function HorizontalCalendar({ selectedDate, onSelectDate, tasks = [], cla
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="w-full overflow-x-auto scrollbar-hide py-2"
+                        className="w-full overflow-x-auto scrollbar-hide py-2 px-4"
                     >
-                        <div className="flex gap-3 min-w-max px-2">
+                        <div className="flex gap-3 min-w-max">
                             {weekDays.map((day) => {
                                 const isSelected = isSameDay(day, selectedDate);
                                 const indicators = getIndicators(day);
                                 return (
-                                    <DayButton
-                                        key={day.toISOString()}
-                                        day={day}
-                                        isSelected={isSelected}
-                                        indicators={indicators}
-                                        onClick={() => onSelectDate(day)}
-                                    />
+                                    <div key={day.toISOString()} ref={isSelected ? (selectedRef as any) : null}>
+                                        <DayButton
+                                            day={day}
+                                            isSelected={isSelected}
+                                            indicators={indicators}
+                                            onClick={() => onSelectDate(day)}
+                                        />
+                                    </div>
                                 );
                             })}
                         </div>

@@ -407,11 +407,11 @@ export default function ReportsPage() {
                     </div>
                 </section>
 
-                <div className="pt-4 grid grid-cols-2 gap-4">
+                <div className="pt-4 flex flex-col sm:flex-row gap-4">
                     <Button
                         onClick={() => setShowPreview(true)}
                         variant="outline"
-                        className="h-14 text-lg rounded-2xl border-2 hover:bg-muted"
+                        className="flex-1 h-14 text-lg rounded-2xl border-2 hover:bg-muted"
                     >
                         <Eye className="mr-2 h-5 w-5" />
                         View Report
@@ -419,10 +419,10 @@ export default function ReportsPage() {
                     <Button
                         onClick={generatePDF}
                         disabled={range === 'custom' && (!customStart || !customEnd)}
-                        className="h-14 text-lg rounded-2xl bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 shadow-xl"
+                        className="flex-1 h-14 text-lg rounded-2xl bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 shadow-xl"
                     >
                         <Download className="mr-2 h-5 w-5" />
-                        Download
+                        Download PDF
                     </Button>
                 </div>
             </div>
