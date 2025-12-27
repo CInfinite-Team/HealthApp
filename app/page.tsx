@@ -189,8 +189,14 @@ export default function Home() {
               </AddHabit>
             </div>
             <div>
-              {habits.map(habit => (
-                <HabitCard key={habit.id} habit={habit} />
+              {habits.filter(habit => {
+                const day = selectedDate.getDay(); // 0 = Sunday
+                if (!habit.frequency || habit.frequency === 'daily') return true;
+                if (habit.frequency === 'weekdays' && day >= 1 && day <= 5) return true;
+                if (habit.frequency === 'weekends' && (day === 0 || day === 6)) return true;
+                return false;
+              }).map(habit => (
+                <HabitCard key={habit.id} habit={habit} date={selectedDate} />
               ))}
             </div>
           </section>

@@ -2,10 +2,11 @@
 
 import { Drawer } from "vaul";
 import { Button } from "@/components/ui/button";
-import { Plus, Activity, Utensils, GlassWater, Trash2, Zap, Heart, Moon, Brain, Thermometer, Coffee, Sun, Sparkles } from "lucide-react";
+import { Plus, Activity, Utensils, GlassWater, Trash2, Zap, Heart, Moon, Brain, Thermometer, Coffee, Sun, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { Input } from "@/components/ui/input";
+import { Autocomplete } from "@/components/ui/Autocomplete";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HealthLog } from "@/types";
@@ -36,6 +37,7 @@ export function SymptomLogger({ children, defaultType = 'symptom', fixedType, lo
     useEffect(() => {
         if (open || inline) {
             if (logToEdit) {
+                setOpen(true); // Open drawer if editing
                 setLabel(logToEdit.label);
                 setType(logToEdit.type);
                 if (logToEdit.severity) setSeverity(logToEdit.severity);
@@ -122,9 +124,24 @@ export function SymptomLogger({ children, defaultType = 'symptom', fixedType, lo
                 {!inline && <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-sage-200 mb-6" />}
 
                 <div className={cn("max-w-md mx-auto w-full", inline && "max-w-full")}>
-                    <h2 className="text-xl font-bold mb-4 font-serif">
-                        {logToEdit ? "Edit Entry" : (fixedType === 'food' ? "Log a Meal" : fixedType === 'symptom' ? "Log Symptom" : "Log Health Event")}
-                    </h2>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold font-serif">
+                            {logToEdit ? "Edit Entry" : (fixedType === 'food' ? "Log a Meal" : fixedType === 'symptom' ? "Log Symptom" : "Log Health Event")}
+                        </h2>
+                        {!inline && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-full -mr-2"
+                                onClick={() => {
+                                    setOpen(false);
+                                    if (onClose) onClose();
+                                }}
+                            >
+                                <X className="h-5 w-5 text-muted-foreground" />
+                            </Button>
+                        )}
+                    </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Type Selection (Only if not fixed) */}
@@ -236,37 +253,79 @@ export function SymptomLogger({ children, defaultType = 'symptom', fixedType, lo
                                 <label className="text-xs font-medium uppercase text-muted-foreground">
                                     {type === 'food' ? "What did you eat?" : type === 'symptom' ? "Symptom" : "Detail"}
                                 </label>
-                                <Input
+                                <Autocomplete
+                                    key={type}
                                     placeholder={
                                         type === 'food' ? "e.g. Avocado Toast" :
                                             type === 'symptom' ? "e.g. Headache" :
                                                 "e.g. 500ml Water"
                                     }
                                     value={label}
-                                    onChange={(e) => setLabel(e.target.value)}
+                                    onValueChange={setLabel}
                                     className="h-12 text-base bg-muted/20"
                                     autoFocus={!inline}
+                                    suggestions={
+                                        type === 'symptom' ? [
+                                            "Headache", "Migraine", "Nausea", "Dizziness", "Fatigue", "Cramps", "Bloating",
+                                            "Anxiety", "Insomnia", "Sore Throat", "Cough", "Fever", "Chills", "Body Aches",
+                                            "Runny Nose", "Congestion", "Palpitations", "Shortness of Breath", "Skin Rash",
+                                            "Joint Pain", "Back Pain", "Stomach Ache", "Heartburn", "Acid Reflux"
+                                        ] : type === 'food' ? [
+                                            "Oatmeal", "Eggs", "Toast", "Salad", "Chicken", "Rice", "Pasta", "Apple",
+                                            "Banana", "Yogurt", "Smoothie", "Coffee", "Tea", "Sandwich", "Burger",
+                                            "Pizza", "Soup", "Steak", "Fish", "Tacos"
+                                        ] : [
+                                            "Water (250ml)", "Water (500ml)", "Magnesium", "Vitamin C", "Vitamin D",
+                                            "Iron", "Zinc", "Omega-3", "Probiotics", "Electrolytes", "Creatine", "Protein Shake"
+                                        ]
+                                    }
                                 />
                             </div>
                         </div>
 
                         {/* Severity (Only for Symptom) */}
+                        {/* Severity (Only for Symptom) */}
                         {type === 'symptom' && (
-                            <div className="space-y-2">
-                                <label className="text-xs font-medium uppercase text-muted-foreground">Severity (1-5)</label>
-                                <div className="flex gap-2">
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-xs font-medium uppercase text-muted-foreground">Severity</label>
+                                    <span className={cn(
+                                        "text-xs font-bold uppercase transition-colors",
+                                        severity === 1 ? "text-emerald-500" :
+                                            severity === 2 ? "text-lime-500" :
+                                                severity === 3 ? "text-yellow-500" :
+                                                    severity === 4 ? "text-orange-500" : "text-red-500"
+                                    )}>
+                                        {severity === 1 ? "Mild" :
+                                            severity === 2 ? "Discomfort" :
+                                                severity === 3 ? "Moderate" :
+                                                    severity === 4 ? "Severe" : "Critical"}
+                                    </span>
+                                </div>
+                                <div className="h-4 flex rounded-full overflow-hidden bg-muted/30 gap-1">
                                     {[1, 2, 3, 4, 5].map((s) => (
                                         <button
                                             key={s}
                                             type="button"
                                             onClick={() => setSeverity(s)}
                                             className={cn(
-                                                "h-10 w-10 rounded-full flex items-center justify-center border font-bold transition-all",
-                                                severity === s ? "bg-emerald-500 text-white border-emerald-600 scale-110 shadow-md" : "bg-card hover:bg-muted"
+                                                "flex-1 transition-all duration-300",
+                                                s <= severity ? (
+                                                    severity === 1 ? "bg-emerald-400" :
+                                                        severity === 2 ? "bg-lime-400" :
+                                                            severity === 3 ? "bg-yellow-400" :
+                                                                severity === 4 ? "bg-orange-500" : "bg-red-500"
+                                                ) : "bg-transparent hover:bg-muted/50"
                                             )}
-                                        >
-                                            {s}
-                                        </button>
+                                        />
+                                    ))}
+                                </div>
+                                <div className="flex justify-between px-1">
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                        <span key={s} className={cn(
+                                            "text-[10px] font-medium transition-colors w-4 text-center",
+                                            severity >= s ? "text-foreground" : "text-muted-foreground/50"
+                                        )}>{s}</span>
                                     ))}
                                 </div>
                             </div>
@@ -296,12 +355,26 @@ export function SymptomLogger({ children, defaultType = 'symptom', fixedType, lo
         return <div className="w-full">{FormContent}</div>;
     }
 
+    // If logToEdit is present, we are in 'controlled' mode via props usually, 
+    // but here we are using internal state 'open' coupled with useEffect.
+    // However, if we are editing, we are likely triggering this component from a parent.
+    // The parent might just render <SymptomLogger logToEdit={...} />
+    // So 'open' state needs to sync.
+
     return (
-        <Drawer.Root open={open} onOpenChange={setOpen}>
+        <Drawer.Root
+            open={open}
+            onOpenChange={(isOpen) => {
+                setOpen(isOpen);
+                if (!isOpen && onClose) onClose();
+            }}
+        >
             <Drawer.Trigger asChild>{children}</Drawer.Trigger>
             <Drawer.Portal>
                 <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm" />
-                {FormContent}
+                <Drawer.Content className="fixed bottom-0 left-0 right-0 max-h-[96vh] flex flex-col rounded-t-[32px] z-50 focus:outline-none">
+                    {FormContent}
+                </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root>
     );

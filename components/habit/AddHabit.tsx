@@ -1,6 +1,6 @@
 import { Drawer } from "vaul";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckCircle, Palette, Save } from "lucide-react";
+import { Plus, CheckCircle, Palette, Save, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -24,15 +24,18 @@ export function AddHabit({ children, habitToEdit, open, onOpenChange, noTrigger 
 
     const [title, setTitle] = useState("");
     const [color, setColor] = useState("bg-sage-200");
+    const [frequency, setFrequency] = useState<Habit['frequency']>('daily');
 
     useEffect(() => {
         if (isOpen) {
             if (habitToEdit) {
                 setTitle(habitToEdit.title);
                 setColor(habitToEdit.color);
+                setFrequency(habitToEdit.frequency || 'daily');
             } else {
                 setTitle("");
                 setColor("bg-sage-200");
+                setFrequency('daily');
             }
         }
     }, [isOpen, habitToEdit]);
@@ -49,7 +52,8 @@ export function AddHabit({ children, habitToEdit, open, onOpenChange, noTrigger 
             updateHabit({
                 ...habitToEdit,
                 title,
-                color
+                color,
+                frequency
             });
         } else {
             addHabit({
@@ -58,7 +62,8 @@ export function AddHabit({ children, habitToEdit, open, onOpenChange, noTrigger 
                 color,
                 icon: 'Circle',
                 completedDates: [],
-                streak: 0
+                streak: 0,
+                frequency
             });
         }
 
@@ -114,6 +119,27 @@ export function AddHabit({ children, habitToEdit, open, onOpenChange, noTrigger 
                                                     color === c && "ring-2 ring-offset-2 ring-sage-500"
                                                 )}
                                             />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-muted-foreground ml-1 flex items-center gap-2"><Clock className="h-4 w-4" /> Frequency</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {(['daily', 'weekdays', 'weekends'] as const).map((f) => (
+                                            <button
+                                                key={f}
+                                                type="button"
+                                                onClick={() => setFrequency(f)}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors capitalize",
+                                                    frequency === f
+                                                        ? "bg-sage-600 text-white border-sage-600"
+                                                        : "bg-transparent text-sage-600 border-sage-200 hover:bg-sage-50"
+                                                )}
+                                            >
+                                                {f}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>

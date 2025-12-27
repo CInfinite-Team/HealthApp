@@ -13,6 +13,7 @@ import { OptionsDrawer } from "@/components/ui/OptionsDrawer";
 export function SupplementList() {
     const { supplements, takeSupplement, deleteSupplement } = useAppStore();
     const [costFilter, setCostFilter] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+    const [categoryFilter, setCategoryFilter] = useState<'all' | 'vital' | 'non-vital'>('all');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [optionsOpenId, setOptionsOpenId] = useState<string | null>(null);
     const [editSupp, setEditSupp] = useState<any>(null);
@@ -23,7 +24,13 @@ export function SupplementList() {
     };
 
     // --- Calculations ---
-    const totalMonthlyCost = supplements.reduce((acc, supp) => {
+    const filteredSupplements = supplements.filter(s => {
+        if (categoryFilter === 'all') return true;
+        if (categoryFilter === 'vital') return s.category === 'vital';
+        return s.category !== 'vital';
+    });
+
+    const totalMonthlyCost = filteredSupplements.reduce((acc, supp) => {
         const costPerPill = supp.pillsPerBottle > 0 ? (supp.costPerBottle / supp.pillsPerBottle) : 0;
         const dailyCost = costPerPill * (supp.frequency || 1);
         return acc + (dailyCost * 30);
@@ -33,14 +40,14 @@ export function SupplementList() {
         : costFilter === 'weekly' ? (totalMonthlyCost / 30) * 7
             : totalMonthlyCost;
 
-    const lowStockCount = supplements.filter(s => {
+    const lowStockCount = filteredSupplements.filter(s => {
         const daysLeft = Math.floor(s.stock / (s.frequency || 1));
         return daysLeft <= 7;
     }).length;
 
     // --- Categorization ---
-    const vitalSupps = supplements.filter(s => s.category === 'vital');
-    const nonVitalSupps = supplements.filter(s => s.category !== 'vital'); // Default or explicitly non-vital
+    const vitalSupps = filteredSupplements.filter(s => s.category === 'vital');
+    const nonVitalSupps = filteredSupplements.filter(s => s.category !== 'vital'); // Default or explicitly non-vital
 
     const renderSupplementCard = (supp: any) => {
         const daysLeft = Math.floor(supp.stock / (supp.frequency || 1));
@@ -135,8 +142,26 @@ export function SupplementList() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-between px-1 gap-4">
                 <h3 className="font-bold text-lg text-sage-800 dark:text-sage-200 hidden">Dashboard</h3>
+                {/* Filters */}
+                <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full p-1">
+                    {(['all', 'vital', 'non-vital'] as const).map(filter => (
+                        <button
+                            key={filter}
+                            onClick={() => setCategoryFilter(filter)}
+                            className={cn(
+                                "px-3 py-1.5 text-xs font-semibold rounded-full capitalize transition-all",
+                                categoryFilter === filter
+                                    ? "bg-white dark:bg-zinc-700 text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            {filter === 'non-vital' ? 'Non-Vital' : filter}
+                        </button>
+                    ))}
+                </div>
+
                 <div className="ml-auto">
                     {/* Add Trigger */}
                     <AddSupplement>
@@ -208,11 +233,48 @@ export function SupplementList() {
                 <div className="bg-sage-50 dark:bg-emerald-900/10 p-4 rounded-[20px] border border-sage-100 dark:border-emerald-900/20">
                     <div className="flex flex-col h-full justify-between gap-4">
                         <div className="flex items-center gap-1.5 text-sage-600/80 text-xs font-semibold uppercase tracking-wide">
-                            <TrendingDown className="h-3.5 w-3.5 text-emerald-600" /> Low Stock
+                            <TrendingDown className="h-3.5 w-3.5 text-emerald-600" /> Next Restock
                         </div>
-                        <div className="text-3xl font-bold font-mono text-emerald-700 dark:text-emerald-400 tracking-tight">
-                            {lowStockCount}
-                        </div>
+                        {filteredSupplements.length > 0 ? (() => {
+                            // Find the supplement running out soonest, prioritizing Vital
+                            const soonest = [...filteredSupplements].sort((a, b) => {
+                                const daysA = Math.floor(a.stock / (a.frequency || 1));
+                                const daysB = Math.floor(b.stock / (b.frequency || 1));
+
+                                // If something is critically low (<= 3 days), prioritize it regardless of category
+                                const criticalA = daysA <= 3;
+                                const criticalB = daysB <= 3;
+                                if (criticalA && !criticalB) return -1;
+                                if (!criticalA && criticalB) return 1;
+
+                                // Otherwise, prioritize Vital supplements ("Meds")
+                                if (a.category === 'vital' && b.category !== 'vital') return -1;
+                                if (a.category !== 'vital' && b.category === 'vital') return 1;
+
+                                return daysA - daysB;
+                            })[0];
+
+                            const daysLeft = Math.floor(soonest.stock / (soonest.frequency || 1));
+
+                            return (
+                                <div>
+                                    <div className={cn("text-3xl font-bold font-mono tracking-tight",
+                                        daysLeft <= 3 ? "text-red-500" :
+                                            daysLeft <= 7 ? "text-orange-500" :
+                                                "text-emerald-700 dark:text-emerald-400"
+                                    )}>
+                                        {daysLeft === 0 ? "Today" : daysLeft === 1 ? "Tomorrow" : `In ${daysLeft} days`}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1 font-medium truncate">
+                                        for {soonest.name}
+                                    </div>
+                                </div>
+                            );
+                        })() : (
+                            <div className="text-3xl font-bold font-mono text-emerald-700 dark:text-emerald-400 tracking-tight">
+                                -
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

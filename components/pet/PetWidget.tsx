@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Sparkles, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { CompanionChatDrawer } from "./CompanionChatDrawer";
 
 export function PetWidget() {
     const pet = useAppStore((state) => state.pet);
@@ -12,6 +13,8 @@ export function PetWidget() {
     const [prevXp, setPrevXp] = useState(pet.xp);
 
     const [quote, setQuote] = useState("");
+    const [flyId, setFlyId] = useState(0);
+    const [chatOpen, setChatOpen] = useState(false);
 
     const quotes = [
         "Your potential is endless.",
@@ -60,8 +63,16 @@ export function PetWidget() {
 
     // Simulate flyover on level up or high interaction
     const triggerFlyover = () => {
+        // Change quote to a new one (random)
+        let newQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        // Ensure it's different if possible (simple check)
+        while (newQuote === quote && quotes.length > 1) {
+            newQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+        setQuote(newQuote);
+
         setIsFlying(true);
-        setTimeout(() => setIsFlying(false), 4000);
+        setTimeout(() => setIsFlying(false), 5000); // Extended duration for the loop
     };
 
     return (
@@ -91,7 +102,7 @@ export function PetWidget() {
                     {/* Interactive Pet Area */}
                     <div
                         className="relative h-24 w-24 sm:h-28 sm:w-28 cursor-pointer shrink-0"
-                        onClick={triggerFlyover}
+                        onClick={() => setChatOpen(true)}
                     >
                         <motion.div
                             animate={{
@@ -125,33 +136,50 @@ export function PetWidget() {
             </div >
 
             {/* Flyover Overlay */}
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
                 {
                     isFlying && (
                         <motion.div
-                            initial={{ x: "-60vw", y: 0, scale: 0.5, opacity: 0 }}
+                            key={flyId}
+                            initial={{ x: 0, y: 300, scale: 0.2, opacity: 0 }}
                             animate={{
-                                x: ["-60vw", "0vw", "60vw"],
-                                y: [0, -20, 0], // Slight bobbing
-                                scale: [0.5, 1.5, 1],
-                                opacity: [0, 1, 0]
+                                x: [0, 150, 0, -150, 0], // Figure-8 / Circle path
+                                y: [300, 0, -200, 0, 300], // Go up and come back down
+                                scale: [0.5, 1.2, 1.5, 1.2, 0.5], // Ensure it gets big enough
+                                opacity: [0, 1, 1, 1, 0],
+                                rotate: [0, -10, 0, 10, 0] // Bank into turns
                             }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 3, ease: "easeInOut" }}
+                            transition={{ duration: 5, ease: "easeInOut", times: [0, 0.25, 0.5, 0.75, 1] }}
                             className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"
                         >
                             <div className="relative">
-                                <img
+                                {/* Flapping Bird */}
+                                <motion.img
                                     src="/hummingbird.png"
                                     alt="Hummingbird"
                                     className="w-64 h-64 object-contain filter drop-shadow-2xl"
+                                    animate={{
+                                        rotateY: [0, 45, 0], // Wing flap simulation via rotation
+                                        scaleY: [1, 0.9, 1] // Slight squash for energetic flap
+                                    }}
+                                    transition={{
+                                        duration: 0.15,
+                                        repeat: Infinity,
+                                        repeatType: "reverse",
+                                        ease: "linear"
+                                    }}
                                 />
+
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white/90 dark:bg-zinc-800/90 backdrop-blur px-6 py-2 rounded-full shadow-xl"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 1, duration: 0.5 }}
+                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white/90 dark:bg-zinc-800/90 backdrop-blur px-8 py-4 rounded-3xl shadow-xl border border-sage-100 dark:border-white/10 text-center min-w-[280px]"
                                 >
-                                    <p className="font-bold text-lg text-sage-600 bg-clip-text text-transparent bg-gradient-to-r from-sage-600 to-indigo-600">Great Job!</p>
+                                    <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-sage-600 to-emerald-600 dark:from-sage-300 dark:to-emerald-400">
+                                        {quote}
+                                    </p>
                                 </motion.div>
                                 {/* Glitter Particles */}
                                 {/* Golden Trail Particles */}
@@ -186,6 +214,12 @@ export function PetWidget() {
                     )
                 }
             </AnimatePresence >
+            {/* Chat Drawer */}
+            <CompanionChatDrawer
+                open={chatOpen}
+                onOpenChange={setChatOpen}
+                petName={pet.name}
+            />
         </>
     );
 }

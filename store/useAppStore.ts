@@ -40,6 +40,12 @@ interface AppState {
     joinedProtocols: string[]; // IDs of joined protocols
     joinProtocol: (protocolId: string) => void;
     createProtocol: (protocol: import('@/types').Protocol) => void;
+
+    // Meal Planning
+    mealPlans: import('@/types').MealPlan[];
+    addMealPlan: (plan: import('@/types').MealPlan) => void;
+    updateMealPlan: (plan: import('@/types').MealPlan) => void;
+    deleteMealPlan: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -284,6 +290,13 @@ export const useAppStore = create<AppState>()(
                     timeline: newTimeline
                 };
             }),
+
+            mealPlans: [],
+            addMealPlan: (plan) => set((state) => ({ mealPlans: [...state.mealPlans, plan] })),
+            updateMealPlan: (updatedPlan) => set((state) => ({
+                mealPlans: state.mealPlans.map(p => p.id === updatedPlan.id ? updatedPlan : p)
+            })),
+            deleteMealPlan: (id) => set((state) => ({ mealPlans: state.mealPlans.filter(p => p.id !== id) })),
         }),
         {
             name: 'health-app-production',

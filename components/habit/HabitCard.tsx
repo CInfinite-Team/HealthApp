@@ -3,13 +3,15 @@
 import { motion, useAnimation, PanInfo } from "framer-motion";
 import { Habit } from "@/types";
 import { useAppStore } from "@/store/useAppStore";
-import { Check, X, Flame, Trash2, Settings2, RotateCcw, MoreVertical, Share2 } from "lucide-react";
+import { Share } from "@capacitor/share";
+import { Check, X, Flame, Trash2, Settings2, RotateCcw, MoreVertical, Share2, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { AddHabit } from "./AddHabit";
 import { useState } from "react";
 import { OptionsDrawer } from "../ui/OptionsDrawer";
+import { ConfirmationDrawer } from "../ui/ConfirmationDrawer";
 
 interface HabitCardProps {
     habit: Habit;
@@ -24,6 +26,23 @@ export function HabitCard({ habit, date }: HabitCardProps) {
     // Use provided date or fallback to today
     const targetDate = date ? format(date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
     const isCompleted = habit.completedDates.includes(targetDate);
+
+
+
+    const [optionsOpen, setOptionsOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+    const handleDelete = async () => {
+        await controls.start({ x: -500, opacity: 0 });
+        deleteHabit(habit.id);
+        toast.success("Habit deleted", {
+            action: {
+                label: "Undo",
+                onClick: () => useAppStore.getState().addHabit(habit),
+            },
+        });
+    };
 
     const handleDragEnd = async (_: any, info: PanInfo) => {
         const threshold = 100;
@@ -47,23 +66,13 @@ export function HabitCard({ habit, date }: HabitCardProps) {
             }
             controls.start({ x: 0 });
         } else if (info.offset.x < -100 || (info.offset.x < -50 && velocity < -500)) {
-            // Swipe Left -> Delete
-            await controls.start({ x: -500, opacity: 0 });
-            deleteHabit(habit.id);
-            toast("Habit deleted", {
-                description: habit.title,
-                action: {
-                    label: "Undo",
-                    onClick: () => useAppStore.getState().addHabit(habit),
-                },
-            });
+            // Swipe Left -> Confirm Delete
+            controls.start({ x: 0 }); // Snap back
+            setDeleteConfirmOpen(true);
         } else {
             controls.start({ x: 0 });
         }
     };
-
-    const [optionsOpen, setOptionsOpen] = useState(false);
-    const [editOpen, setEditOpen] = useState(false);
 
     return (
         <>
@@ -101,7 +110,9 @@ export function HabitCard({ habit, date }: HabitCardProps) {
                             }}
                             className={cn(
                                 "h-12 w-12 rounded-full flex items-center justify-center text-xl transition-colors",
-                                isCompleted ? "bg-emerald-500 text-white" : "bg-sage-100 text-sage-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                isCompleted
+                                    ? "bg-emerald-500 text-white"
+                                    : cn(habit.color || "bg-sage-100", "text-zinc-700 dark:text-zinc-800")
                             )}
                         >
                             {isCompleted ? <RotateCcw className="h-6 w-6" /> : habit.title.charAt(0)}
@@ -129,46 +140,66 @@ export function HabitCard({ habit, date }: HabitCardProps) {
                             <MoreVertical className="h-5 w-5" />
                         </button>
                     </div>
-                </motion.div>
-            </div>
+                </motion.div >
+            </div >
 
             {/* Options Drawer */}
-            <OptionsDrawer
+            < OptionsDrawer
                 open={optionsOpen}
                 onOpenChange={setOptionsOpen}
                 title={habit.title}
-                options={[
-                    {
-                        label: 'Share Progress',
-                        icon: Share2,
-                        onClick: () => {
-                            useAppStore.getState().pingFriends(`Im on a ${habit.streak} day streak for ${habit.title}!`);
-                            toast.success("Progress shared!");
+                options={
+                    [
+                        {
+                            label: 'Share Progress',
+                            icon: Share2,
+                            onClick: () => {
+                                useAppStore.getState().pingFriends(`Im on a ${habit.streak} day streak for ${habit.title}!`);
+                                toast.success("Progress shared!");
+                            }
+                        },
+                        {
+                            label: 'Share with Friend',
+                            icon: UserPlus,
+                            onClick: async () => {
+                                await Share.share({
+                                    title: `Join me in ${habit.title}!`,
+                                    text: `I'm building a new habit: ${habit.title}. Join me on HealthApp and let's track it together!`,
+                                    dialogTitle: 'Share Habit'
+                                });
+                            }
+                        },
+                        {
+                            label: 'Edit Habit',
+                            icon: Settings2,
+                            onClick: () => setEditOpen(true)
+                        },
+                        {
+                            label: 'Delete Habit',
+                            icon: Trash2,
+                            variant: 'destructive',
+                            onClick: () => setDeleteConfirmOpen(true)
                         }
-                    },
-                    {
-                        label: 'Edit Habit',
-                        icon: Settings2,
-                        onClick: () => setEditOpen(true)
-                    },
-                    {
-                        label: 'Delete Habit',
-                        icon: Trash2,
-                        variant: 'destructive',
-                        onClick: () => {
-                            deleteHabit(habit.id);
-                            toast.success("Habit deleted");
-                        }
-                    }
-                ]}
+                    ]}
             />
 
             {/* Edit Drawer (controlled by local state now) */}
-            <AddHabit
+            < AddHabit
                 habitToEdit={habit}
                 open={editOpen}
                 onOpenChange={setEditOpen}
                 noTrigger
+            />
+
+            {/* Delete Confirmation Drawer */}
+            < ConfirmationDrawer
+                open={deleteConfirmOpen}
+                onOpenChange={setDeleteConfirmOpen}
+                title={`Delete ${habit.title}?`
+                }
+                description="This will permanently delete this habit and all its history. This action cannot be undone."
+                onConfirm={handleDelete}
+                confirmLabel="Delete Habit"
             />
         </>
     );

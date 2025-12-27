@@ -9,10 +9,11 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react"
 interface HorizontalCalendarProps {
     selectedDate: Date;
     onSelectDate: (date: Date) => void;
-    tasks: { date: string; completed: boolean }[]; // Minimal task info for indicators
+    tasks?: { date: string; completed: boolean }[]; // Minimal task info for indicators
+    className?: string;
 }
 
-export function HorizontalCalendar({ selectedDate, onSelectDate, tasks }: HorizontalCalendarProps) {
+export function HorizontalCalendar({ selectedDate, onSelectDate, tasks = [], className }: HorizontalCalendarProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
     // For Month View
@@ -58,17 +59,16 @@ export function HorizontalCalendar({ selectedDate, onSelectDate, tasks }: Horizo
     };
 
     return (
-        <div className="w-full relative">
-            {/* Header Control for Expansion (Optional overlay on date?) Or just a handle bar */}
-            {/* Header / Expansion Control */}
+        <div className={cn("w-full relative", className)}>
+            {/* Header Control for Expansion */}
             <div
-                className="flex flex-col items-center justify-center pb-2 cursor-pointer group"
+                className="flex flex-col items-center justify-center pb-2 cursor-pointer group select-none"
                 onClick={toggleExpand}
             >
-                {/* Collapsed Month Label (Only show if NOT expanded to avoid duplicate) */}
+                {/* Collapsed Month Label - Always show if collapsed to give context */}
                 {!isExpanded && (
-                    <div className="text-sm font-semibold text-sage-600 dark:text-sage-300 mb-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                        {format(currentMonth, 'MMMM yyyy')} <ChevronDown className="inline h-3 w-3 ml-1" />
+                    <div className="flex items-center gap-1 text-sm font-semibold text-sage-600 dark:text-sage-300 mb-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                        {format(currentMonth, 'MMMM yyyy')} <ChevronDown className="h-3 w-3" />
                     </div>
                 )}
 

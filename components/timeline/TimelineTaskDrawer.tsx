@@ -99,8 +99,8 @@ export function TimelineTaskDrawer({ children, task, defaultDate, open, onOpenCh
                 </Drawer.Trigger>
             )}
             <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
-                <Drawer.Content className="bg-background flex flex-col rounded-t-[10px] max-h-[90vh] h-[90vh] fixed bottom-0 left-0 right-0 z-50 border-t border-sage-100 dark:border-sage-800 outline-none">
+                <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[60]" />
+                <Drawer.Content className="bg-background flex flex-col rounded-t-[10px] max-h-[90vh] h-[90vh] fixed bottom-0 left-0 right-0 z-[60] border-t border-sage-100 dark:border-sage-800 outline-none">
                     <div className="p-4 bg-muted/20 rounded-t-[10px] flex-1 overflow-y-auto pb-safe">
                         <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted mb-8" />
 

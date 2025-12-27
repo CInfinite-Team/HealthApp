@@ -5,6 +5,8 @@ export type Habit = {
     icon: string; // Lucide icon name
     completedDates: string[]; // ISO date strings (YYYY-MM-DD)
     streak: number;
+    frequency?: 'daily' | 'weekdays' | 'weekends' | 'custom';
+    customDays?: number[]; // 0=Sun, 1=Mon, etc.
 };
 
 export type TaskType = 'habit' | 'todo' | 'medication' | 'meal' | 'event';
@@ -85,3 +87,14 @@ export interface Protocol {
 export interface MarketplaceItem extends Protocol {
     // Extending Protocol
 }
+
+export type MealPlan = {
+    id: string;
+    name: string;
+    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+    frequency: 'daily' | 'alternate' | 'custom';
+    selectedDays: number[]; // 0=Sun, 1=Mon, etc.
+    portions: Record<number, string>; // Day index -> portion string (e.g. { 1: "200g", 2: "200g" })
+    time?: string; // Optional time (e.g. "08:00")
+    notes?: string;
+};

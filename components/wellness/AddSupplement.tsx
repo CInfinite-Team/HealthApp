@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { Input } from "@/components/ui/input";
+import { Autocomplete } from "../ui/Autocomplete";
 import { toast } from "sonner";
 import { Supplement } from "@/types";
 
@@ -107,12 +108,18 @@ export function AddSupplement({ children, supplementToEdit, open: controlledOpen
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Name</label>
-                                    <Input
+                                    <Autocomplete
                                         placeholder="e.g. Magnesium Glycinate"
                                         value={name}
-                                        onChange={(e) => setName(e.target.value)}
+                                        onValueChange={setName}
                                         className="h-11 bg-muted/20"
                                         autoFocus={!supplementToEdit}
+                                        suggestions={[
+                                            "Magnesium Glycinate", "Vitamin D3", "Omega-3 Fish Oil", "Probiotics",
+                                            "Vitamin C", "Zinc Picolinate", "Multivitamin", "Iron", "Vitamin B12",
+                                            "Creatine Monohydrate", "Whey Protein", "Collagen Peptides",
+                                            "Ashwagandha", "Melatonin", "Curcumin", "L-Theanine"
+                                        ]}
                                     />
                                 </div>
 
