@@ -129,6 +129,7 @@ export default function MealsPage() {
                             id: plan.id,
                             title: `${plan.name} (${portion})`,
                             time: plan.time || "08:00", // Default if missing
+                            date: selectedDate.toISOString().split('T')[0], // YYYY-MM-DD
                             completed: isCompleted,
                             type: 'habit', // Use habit styling for now
                             category: 'wellness'
